@@ -65,6 +65,4 @@ class CarrotRouter:
         return selected_models
 
 
-# Example Usage:
-router = CarrotRouter(hf_token='YOUR_HF_TOKEN')
-print(router.route(['What is Robert Frost’s most famous poem?', 'What is Itô’s integral?'], mu=0.3))
+
