@@ -28,7 +28,7 @@ pip install jupyter notebook
 
 ##  Smart Price-aware Routing (SPROUT) dataset and pre-trained router
 
-To access our routing dataset, SPROUT, and our pre-trained router, please check [CARROT HuggingFace page](https://huggingface.co/CARROT-LLM-Routing).
+To access our routing dataset, SPROUT, and our pre-trained router, please check [CARROT's HuggingFace page](https://huggingface.co/CARROT-LLM-Routing).
 
 
 ## Reproducing results from the paper
