@@ -15,6 +15,9 @@ CARROT is a lightweight, efficient, and theoretically optimal router designed fo
 - **Minimax Optimality:** Theoretically established to achieve rate-optimal routing performance.
 - **Computational Efficiency:** Lightweight design ensures rapid decision-making with minimal computational overhead.
 
+## Quick Start
+
+Run our [Google Colab demo](https://github.com/somerstep/CARROT/blob/main/notebooks/CARROT_KNN_demo.ipynb) and learn how to use CARROT-KNN for simple, well-performing, and efficient routing of LMs!
 
 ## Installation
 
