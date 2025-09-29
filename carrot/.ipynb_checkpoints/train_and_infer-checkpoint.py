@@ -352,7 +352,7 @@ def train_roberta(X, #list of texts
         per_device_train_batch_size=batch_size,
         per_device_eval_batch_size=batch_size,
         max_steps=max_steps,
-        num_train_epochs=9999,
+        num_train_epochs=9999, #
         weight_decay=weight_decay,
         learning_rate=learning_rate,
         logging_dir="./logs",
@@ -387,6 +387,7 @@ if __name__=="__main__":
 
     assert dataset in ['open-llm-lb-v2','routerbench','sprout']
 
+    
     SMALL_MODEL, LARGE_MODEL = LARGE_SMALL_MODELS[dataset]['SMALL_MODEL'], LARGE_SMALL_MODELS[dataset]['LARGE_MODEL']
     
     ### Load data
@@ -399,7 +400,9 @@ if __name__=="__main__":
         data[s] = np.array(data[s]).astype(float)
     if dataset == 'sprout':
         data['OT_train'] = np.array(data['OT_train']).astype(float)
-        
+    elif dataset == 'routerbench':
+        data['C_train'] = np.array(data['C_train']).astype(float)
+
     rorf = train_rorf(data['XOAI_train'], get_rorf_labels((data['Y_train']>.5).astype(float),small_model_ind,large_model_ind))
     data['Y_hat_rorf'] = rorf.predict_proba(data['XOAI_test'])[:,-2:].sum(1)
     
@@ -426,5 +429,23 @@ if __name__=="__main__":
         roberta = train_roberta(data['Q_train'], data['OT_train'], task='regression', output_dir = f"../models/{dataset}/cost/roberta/checkpoints")
         tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
         data['OT_hat_carrot-roberta'] = roberta.predict(prepare_datasets_prediction(data['Q_test'], tokenizer)).predictions
+        
+    elif dataset == 'routerbench':
+        mu = np.mean(data['C_train'], axis=0, keepdims=True)
+        std = np.std(data['C_train'], axis=0, keepdims=True)
+        Z = (data['C_train'] - mu)/std
+        
+        knn = train_knn(data['XOAI_train'], Z, task='regression')
+        Z_hat = knn.predict(data['XOAI_test'])
+        data['C_hat_carrot-knn'] = mu + std*Z_hat
+        
+        knn_sbert = train_knn(data['X_train'], Z, task='regression')
+        Z_hat = knn_sbert.predict(data['X_test'])
+        data['C_hat_carrot-knn-sbert'] = mu + std*Z_hat
     
+        roberta = train_roberta(data['Q_train'], Z, task='regression', output_dir = f"../models/{dataset}/cost/roberta/checkpoints")
+        tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
+        Z_hat = roberta.predict(prepare_datasets_prediction(data['Q_test'], tokenizer)).predictions
+        data['C_hat_carrot-roberta'] = mu + std*Z_hat
+
     np.save(f"../data/{dataset}/{dataset}_data_train_test_preds.npy", data)

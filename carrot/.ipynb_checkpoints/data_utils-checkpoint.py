@@ -5,7 +5,7 @@ from openai import OpenAI
 import numpy as np
 import tiktoken
 
-OPENAI_API_KEY = ""
+OPENAI_API_KEY = "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"
 embedding_model_oai = "text-embedding-3-small"
 openai_client = OpenAI(api_key=OPENAI_API_KEY)
 embedding_model = SentenceTransformer('all-MiniLM-L12-v2')

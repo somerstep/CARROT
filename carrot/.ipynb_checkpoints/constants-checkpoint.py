@@ -6,8 +6,10 @@ MODEL_NAME = "roberta-base"
 
 ### Defining small and large models
 LARGE_SMALL_MODELS = {'sprout':{'LARGE_MODEL':'openai-gpt-4o','SMALL_MODEL':'openai-gpt-4o-mini'},
-                      'open-llm-lb-v2':{'LARGE_MODEL':'Qwen/Qwen2.5-72B-Instruct','SMALL_MODEL':'Qwen/Qwen2.5-7B-Instruct'}}
-        
+                      'open-llm-lb-v2':{'LARGE_MODEL':'Qwen/Qwen2.5-72B-Instruct','SMALL_MODEL':'Qwen/Qwen2.5-7B-Instruct'},
+                      'routerbench':{'LARGE_MODEL':'gpt-4-1106-preview','SMALL_MODEL':'mistralai/mixtral-8x7b-chat'}}
+ 
+
 OPEN_BENCHMARKS = {'bbh':['leaderboard_bbh_boolean_expressions',
                      'leaderboard_bbh_causal_judgement',
                      'leaderboard_bbh_date_understanding',
