@@ -15,6 +15,9 @@ CARROT is a lightweight, efficient, and theoretically optimal router designed fo
 - **Minimax Optimality:** Theoretically established to achieve rate-optimal routing performance.
 - **Computational Efficiency:** Lightweight design ensures rapid decision-making with minimal computational overhead.
 
+## Quick Start
+
+Run our [Google Colab demo](https://github.com/somerstep/CARROT/blob/main/notebooks/CARROT_KNN_demo.ipynb) and learn how to use CARROT-KNN for simple, well-performing, and efficient routing of LMs!
 
 ## Installation
 
@@ -28,7 +31,7 @@ pip install jupyter notebook
 
 ##  Smart Price-aware Routing (SPROUT) dataset and pre-trained router
 
-To access our routing dataset, SPROUT, and our pre-trained router, please check [CARROT HuggingFace page](https://huggingface.co/CARROT-LLM-Routing).
+To access our routing dataset, SPROUT, and our pre-trained router, please check [CARROT's HuggingFace page](https://huggingface.co/CARROT-LLM-Routing).
 
 
 ## Reproducing results from the paper
