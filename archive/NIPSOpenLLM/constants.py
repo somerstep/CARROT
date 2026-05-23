@@ -1,16 +1,20 @@
+BENCH = 'all'
+TEST_SIZE = .25
 RANDOM_STATE = 42
-TEST_SIZE = .2
-VAL_SIZE = .1
-MAX_LENGTH = 512
-MODEL_NAME = "roberta-base"
 
-### Defining small and large models
-LARGE_SMALL_MODELS = {'sprout':{'LARGE_MODEL':'openai-gpt-4o','SMALL_MODEL':'openai-gpt-4o-mini'},
-                      'open-llm-lb-v2':{'LARGE_MODEL':'Qwen/Qwen2.5-72B-Instruct','SMALL_MODEL':'Qwen/Qwen2.5-7B-Instruct'},
-                      'routerbench':{'LARGE_MODEL':'gpt-4-1106-preview','SMALL_MODEL':'zero-one-ai/Yi-34B-Chat'}}
- 
+N_ESTIMATORS = 100 #RF (https://github.com/Not-Diamond/RoRF/blob/main/run_trainer.sh)
+MAX_DEPTH = 20 #RF (https://github.com/Not-Diamond/RoRF/blob/main/run_trainer.sh)
 
-OPEN_BENCHMARKS = {'bbh':['leaderboard_bbh_boolean_expressions',
+LAMB = [.01, .1, .3, .5, .7, .9, .99]
+
+MAX_LENGTH = 512 #BERT
+BATCH_SIZE = 8 #BERT
+BERT_NAME = "roberta-base"
+
+LARGE_MODEL = 'Qwen/Qwen2.5-72B-Instruct' #MF #'Qwen/Qwen2.5-72B-Instruct'
+SMALL_MODEL = 'Qwen/Qwen2.5-7B-Instruct' #MF
+
+BENCHMARKS = {'bbh':['leaderboard_bbh_boolean_expressions',
                      'leaderboard_bbh_causal_judgement',
                      'leaderboard_bbh_date_understanding',
                      'leaderboard_bbh_disambiguation_qa',
@@ -49,9 +53,45 @@ OPEN_BENCHMARKS = {'bbh':['leaderboard_bbh_boolean_expressions',
               'musr':['leaderboard_musr_murder_mysteries',
                       'leaderboard_musr_object_placements',
                       'leaderboard_musr_team_allocation']}
-OPEN_BENCHMARKS['all'] = OPEN_BENCHMARKS['bbh']+OPEN_BENCHMARKS['gpqa']+OPEN_BENCHMARKS['math']+OPEN_BENCHMARKS['mmlu_pro']+OPEN_BENCHMARKS['musr']
+BENCHMARKS['all'] = BENCHMARKS['bbh']+BENCHMARKS['gpqa']+BENCHMARKS['math']+BENCHMARKS['mmlu_pro']+BENCHMARKS['musr']
 
-OPEN_MODELS = ['open-llm-leaderboard/NousResearch__Nous-Hermes-2-Mixtral-8x7B-DPO-details',
+SCENARIOS = ['leaderboard_bbh_boolean_expressions',
+             'leaderboard_bbh_causal_judgement',
+             'leaderboard_bbh_date_understanding',
+             'leaderboard_bbh_disambiguation_qa',
+             'leaderboard_bbh_formal_fallacies',
+             'leaderboard_bbh_geometric_shapes',
+             'leaderboard_bbh_hyperbaton',
+             'leaderboard_bbh_logical_deduction_five_objects',
+             'leaderboard_bbh_logical_deduction_seven_objects',
+             'leaderboard_bbh_logical_deduction_three_objects',
+             'leaderboard_bbh_movie_recommendation',
+             'leaderboard_bbh_navigate',
+             'leaderboard_bbh_object_counting',
+             'leaderboard_bbh_penguins_in_a_table',
+             'leaderboard_bbh_reasoning_about_colored_objects',
+             'leaderboard_bbh_ruin_names',
+             'leaderboard_bbh_salient_translation_error_detection',
+             'leaderboard_bbh_snarks',
+             'leaderboard_bbh_sports_understanding',
+             'leaderboard_bbh_temporal_sequences',
+             'leaderboard_bbh_tracking_shuffled_objects_five_objects',
+             'leaderboard_bbh_tracking_shuffled_objects_seven_objects',
+             'leaderboard_bbh_tracking_shuffled_objects_three_objects',
+             'leaderboard_bbh_web_of_lies','leaderboard_gpqa_diamond',
+             'leaderboard_gpqa_extended',
+             'leaderboard_gpqa_main','leaderboard_ifeval','leaderboard_math_algebra_hard',
+             'leaderboard_math_counting_and_prob_hard',
+             'leaderboard_math_geometry_hard',
+             'leaderboard_math_intermediate_algebra_hard',
+             'leaderboard_math_num_theory_hard',
+             'leaderboard_math_prealgebra_hard',
+             'leaderboard_math_precalculus_hard','leaderboard_mmlu_pro','leaderboard_musr_murder_mysteries',
+             'leaderboard_musr_object_placements',
+             'leaderboard_musr_team_allocation']
+
+
+MODELS = ['open-llm-leaderboard/NousResearch__Nous-Hermes-2-Mixtral-8x7B-DPO-details',
           'open-llm-leaderboard/01-ai__Yi-34B-Chat-details',
           'open-llm-leaderboard/Qwen__QwQ-32B-Preview-details',
           'open-llm-leaderboard/Qwen__Qwen2-72B-Instruct-details',
@@ -73,8 +113,7 @@ OPEN_MODELS = ['open-llm-leaderboard/NousResearch__Nous-Hermes-2-Mixtral-8x7B-DP
           'open-llm-leaderboard/nvidia__Llama-3.1-Nemotron-70B-Instruct-HF-details',
           'open-llm-leaderboard/upstage__SOLAR-10.7B-Instruct-v1.0-details']
 
-#dollars per million tokens
-OPEN_COSTS = {'NousResearch/Nous-Hermes-2-Mixtral-8x7B-DPO':.6,
+COSTS = {'NousResearch/Nous-Hermes-2-Mixtral-8x7B-DPO':.6,
          '01-ai/Yi-34B-Chat':.8,
          'Qwen/QwQ-32B-Preview':1.2,
          'Qwen/Qwen2-72B-Instruct':.9,
@@ -94,17 +133,3 @@ OPEN_COSTS = {'NousResearch/Nous-Hermes-2-Mixtral-8x7B-DPO':.6,
          'mistralai/Mixtral-8x7B-Instruct-v0.1':.6,
          'nvidia/Llama-3.1-Nemotron-70B-Instruct-HF':.9,
          'upstage/SOLAR-10.7B-Instruct-v1.0':.3}
-
-SPROUT_COSTS = {'aws-claude-3-5-sonnet-v1':[3, 15], #[input,output] 
-             'aws-titan-text-premier-v1': [.8, 3.2],
-             'openai-gpt-4o': [2.5, 10],
-             'openai-gpt-4o-mini': [0.15,0.6],
-             'wxai-granite-3-2b-instruct-8k-max-tokens':[0.1, 0.1],
-             'wxai-granite-3-8b-instruct-8k-max-tokens':[0.2, 0.2],
-             'wxai-llama-3-1-70b-instruct':[.9,.9],
-             'wxai-llama-3-1-8b-instruct': [.2,.2],
-             'wxai-llama-3-2-1b-instruct':[.06,.06],
-             'wxai-llama-3-2-3b-instruct':[.06, .06],
-             'wxai-llama-3-3-70b-instruct':[.9,.9],
-             'wxai-mixtral-8x7b-instruct-v01':[.6,.6],
-             'wxai-llama-3-405b-instruct':[3.5,  3.5]}

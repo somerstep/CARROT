@@ -1,50 +1,98 @@
 # CARROT: A Cost Aware Rate Optimal Router
 
-Welcome to our GitHub repository! This repository is based on the ideas introduced in
+Code and data-prep pipeline for
 
 [Somerstep, Seamus, Felipe Maia Polo, Allysson Flavio Melo de Oliveira, Prattyush Mangal, Mírian Silva, Onkar Bhardwaj, Mikhail Yurochkin, and Subha Maity. "CARROT: A Cost Aware Rate Optimal Router." arXiv preprint arXiv:2502.03261 (2025).](https://arxiv.org/abs/2502.03261)
 
-The repository is still under construction and only part of experiments/plots of the paper can be currently reproduced. See TODO section below.
-
 ## Overview
 
-CARROT is a lightweight, efficient, and theoretically optimal router designed for intelligently directing queries to Large Language Models (LLMs). With the rapid expansion of available LLMs, selecting the most cost-effective model capable of producing an adequate response is increasingly critical. CARROT selects models by balancing performance and cost, leveraging robust statistical estimates to ensure optimal routing decisions. It is computationally efficient and proven minimax rate-optimal, providing confidence in both cost savings and performance quality.
+CARROT is a lightweight, efficient, and theoretically optimal router for directing queries to Large Language Models. With the rapid expansion of available LLMs, selecting the cheapest model capable of producing an adequate response is increasingly critical. CARROT picks models by balancing predicted performance and cost, leveraging robust statistical estimates to make optimal routing decisions. It is computationally efficient and minimax rate-optimal.
 
 ### Key Features
-- **Cost-Aware Selection:** Routes queries to the cheapest capable LLM, optimizing for customizable cost-performance trade-offs.
-- **Minimax Optimality:** Theoretically established to achieve rate-optimal routing performance.
-- **Computational Efficiency:** Lightweight design ensures rapid decision-making with minimal computational overhead.
+- **Cost-aware selection:** routes queries to the cheapest capable LLM, with a tunable cost / performance trade-off (`λ`).
+- **Minimax optimality:** rate-optimal routing performance.
+- **Lightweight:** KNN and RoBERTa variants both run on a laptop.
 
-## Quick Start
+## Repository layout
 
-Run our [Google Colab demo](https://github.com/somerstep/CARROT/blob/main/notebooks/CARROT_KNN_demo.ipynb) and learn how to use CARROT-KNN for simple, well-performing, and efficient routing of LMs!
+```
+carrot/         # training + inference package
+  gen_routerbench.py        # build train/test splits for Routerbench
+  gen_open-llm-lb-v2.py     # build train/test splits for Open-LLM-Leaderboard v2
+  gen_sprout.py             # build train/test splits for SPROUT
+  train_and_infer.py        # fit routers, write per-router predictions to data/{ds}/preds/
+  utils.py, constants.py, data_utils.py
+demo/
+  router.py                 # minimal CarrotRouter wrapping the released HF checkpoints
+notebooks/
+  plot1_sprout_spider.ipynb         # Plot 1: CARROT vs gpt-4o on SPROUT
+  plot2_routerbench_binary.ipynb    # Plot 2: CARROT vs binary routers on Routerbench
+  plot3_routerbench_vs_rb.ipynb     # Plot 3: CARROT vs Routerbench router on Routerbench
+  plot4_sprout_vs_rb_zero.ipynb     # Plot 4: CARROT vs Routerbench + zero router on SPROUT
+  plot5_openllm_binary.ipynb        # Plot 5: CARROT vs binary routers on Open-LLM-Leaderboard v2
+  plots_bw.ipynb                    # Print-friendly black-and-white versions of plots 1–5
+  knn_accuracy.ipynb                # CARROT-KNN test-split metrics across all three datasets
+  sprout_embedding_dim.ipynb        # PCA / Kernel PCA / Isomap on SPROUT OpenAI embeddings
+plots/          # rendered PDFs + knn_accuracy_table.md
+archive/        # earlier NeurIPS/ICML scratch (kept for reference)
+```
+
+## Quick start (use the released router)
+
+The fastest path is the wrapper in `demo/router.py`, which loads the published RoBERTa checkpoints (`CARROT-LLM-Routing/Performance` and `CARROT-LLM-Routing/Cost`) from HuggingFace:
+
+```python
+from demo.router import CarrotRouter
+
+router = CarrotRouter(hf_token="hf_...")
+selected = router.route(["Explain entropy in one sentence."], mu=0.3)
+print(selected)
+```
+
+`mu` ∈ [0, 1] tunes the cost / performance trade-off (0 = always the most accurate model, 1 = always the cheapest).
 
 ## Installation
 
-To use the code in this repository, clone the repo and create a conda environment using:
-
 ```
-conda env create --file=environment.yml
+conda env create --file=environment.yml      # Linux / CUDA
+# or
+conda env create --file=environment-macos.yml   # macOS / MPS
 conda activate carrot
 pip install jupyter notebook
 ```
 
-##  Smart Price-aware Routing (SPROUT) dataset and pre-trained router
+Copy `.env.example` → `.env` and fill in `OPENAI_API_KEY` (used by `gen_routerbench.py` and `gen_open-llm-lb-v2.py` for `text-embedding-3-small`). `HF_TOKEN` is only needed for gated models.
 
-To access our routing dataset, SPROUT, and our pre-trained router, please check [CARROT's HuggingFace page](https://huggingface.co/CARROT-LLM-Routing).
+## SPROUT dataset and pre-trained router
 
+The SPROUT dataset and the pre-trained RoBERTa routers are on the [CARROT HuggingFace page](https://huggingface.co/CARROT-LLM-Routing).
 
-## Reproducing results from the paper
+## Reproducing the paper plots
 
-1. Insert your OPENAI API key on `carrot/data_utils.py`.
-2. Generate data by running `gen_open-llm-lb-v2.py` and `gen_sprout.py`.
-3. Train prediction models by running `train_and_infer.py`. You will have to specify which dataset you want to work with, e.g., `python train_and_infer.py --dataset 'open-llm-lb-v2'`.
-4. Activate Jupyter Notebook and run `carrot/plots.ipynb` to generate plots.
-
-## TODOs
-1. Include results for RouterBench.
-2. Include rest of paper plots (e.g., choice of models).
-3. Create demo for router training. 
+1. Build per-dataset train/test splits (one-time, requires the OpenAI key):
+   ```
+   cd carrot
+   python gen_routerbench.py
+   python gen_open-llm-lb-v2.py
+   python gen_sprout.py
+   ```
+2. Fit routers and write per-router predictions into `data/{dataset}/preds/`:
+   ```
+   python train_and_infer.py --dataset routerbench   --routers carrot-knn carrot-roberta mf rorf roberta-binary
+   python train_and_infer.py --dataset open-llm-lb-v2 --routers carrot-knn carrot-roberta mf rorf roberta-binary
+   python train_and_infer.py --dataset sprout         --routers carrot-knn
+   ```
+   (`--trainer custom` uses the bundled PyTorch loop, which is the right choice on Apple Silicon; `--trainer hf` uses HuggingFace `Trainer`.)
+3. Render the figures:
+   ```
+   cd ../notebooks
+   jupyter nbconvert --to notebook --execute plot1_sprout_spider.ipynb --inplace
+   jupyter nbconvert --to notebook --execute plot2_routerbench_binary.ipynb --inplace
+   jupyter nbconvert --to notebook --execute plot3_routerbench_vs_rb.ipynb --inplace
+   jupyter nbconvert --to notebook --execute plot4_sprout_vs_rb_zero.ipynb --inplace
+   jupyter nbconvert --to notebook --execute plot5_openllm_binary.ipynb --inplace
+   ```
+   PDFs land in `plots/`.
 
 ## Citing
 
